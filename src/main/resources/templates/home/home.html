@@ -1,0 +1,65 @@
+<th:block th:fragment="content">
+    <section class="home-hero">
+        <div class="container">
+            <h1 class="home-hero__title">Plataforma Educativa</h1>
+            <p class="home-hero__welcome">
+                Bienvenido, <span sec:authentication="name"></span>
+            </p>
+        </div>
+    </section>
+
+    <section class="home-section" sec:authorize="hasRole('ADMIN')">
+        <div class="container">
+            <h2 class="home-section__title">Panel de Administración</h2>
+            <p>Accede a las herramientas de gestión del sistema.</p>
+        </div>
+    </section>
+
+    <section class="home-section">
+        <div class="container">
+            <h2 class="home-section__title">Cursos disponibles</h2>
+            <div id="courses-container" class="courses-loading" aria-live="polite">
+                Cargando cursos...
+            </div>
+        </div>
+    </section>
+</th:block>
+
+<script th:inline="javascript">
+    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+    async function cargarCursos() {
+        const container = document.getElementById('courses-container');
+        try {
+            const response = await fetch('/api/courses', {
+                headers: { [csrfHeader]: csrfToken }
+            });
+            if (!response.ok) throw new Error('Error al obtener cursos');
+            const cursos = await response.json();
+            mostrarCursos(cursos);
+        } catch (error) {
+            container.textContent = 'Error al cargar los cursos.';
+            console.error(error);
+        }
+    }
+
+    function mostrarCursos(cursos) {
+        const container = document.getElementById('courses-container');
+        if (cursos.length === 0) {
+            container.textContent = 'No hay cursos todavía.';
+            return;
+        }
+        const list = document.createElement('ul');
+        list.className = 'courses-list';
+        cursos.forEach(curso => {
+            const li = document.createElement('li');
+            li.innerHTML = `<strong>${curso.title}</strong> - ${curso.description}`;
+            list.appendChild(li);
+        });
+        container.innerHTML = '';
+        container.appendChild(list);
+    }
+
+    cargarCursos();
+</script>

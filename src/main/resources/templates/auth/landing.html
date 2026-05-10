@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    th:replace="~{layouts/default :: layout('Bienvenido - Plataforma Educativa', 'Plataforma Educativa', ~{::pageStyles}, ~{::content})}">
+
+<th:block th:fragment="pageStyles">
+    <!-- Styles moved to static CSS files: /css/global.css, /css/components.css, /css/layout.css -->
+</th:block>
+
+<body th:attr="data-authenticated=${#authorization.expression('isAuthenticated()')}">
+
+    <div th:fragment="content">
+        <div class="landing-page">
+        <!-- Cabecera de bienvenida -->
+        <div class="hero" style="text-align: center; margin-bottom: 32px;">
+            <div class="badge">Plataforma Educativa</div>
+            <h1>Descubre nuestros cursos</h1>
+            <p style="max-width: 600px; margin: 0 auto;">
+                Explora contenido de alta calidad creado por expertos.
+                <span sec:authorize="!isAuthenticated()">Inicia sesión con Google para acceder a todas las
+                    funcionalidades.</span>
+                <span sec:authorize="isAuthenticated()">Continúa tu aprendizaje donde lo dejaste.</span>
+            </p>
+        </div>
+
+        <!-- Mensaje si no está autenticado -->
+        <div sec:authorize="!isAuthenticated()" class="login-prompt">
+            ⚡ <a th:href="@{/oauth2/authorization/google}" style="color: #7dd3fc; font-weight: bold;">Inicia sesión con
+                Google</a> para inscribirte en los cursos y guardar tu progreso.
+        </div>
+
+        <!-- Grid de cursos (se llenará con AJAX) -->
+        <div id="courses-container" class="courses-grid">
+            <p>Cargando cursos...</p>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

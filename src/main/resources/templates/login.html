@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <title>Login - Plataforma</title>
+</head>
+
+<body>
+
+<h1>Iniciar sesión</h1>
+
+<div>
+    <p>Inicia sesión con tu cuenta Google:</p>
+    <a th:href="@{/oauth2/authorization/google}">Iniciar sesión con Google</a>
+</div>
+
+<div>
+    <p>O vuelve al inicio:</p>
+    <a th:href="@{/}">Volver</a>
+</div>
+
+</body>
+</html>

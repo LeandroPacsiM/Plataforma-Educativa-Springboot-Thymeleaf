@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    th:fragment="layout(pageTitle, pageDescription, pageStyles, content)"
+    th:attr="lang=${lang ?: 'es'}">
+
+<head th:replace="~{fragments/head :: head}"
+      th:with="pageTitle=${pageTitle}, pageDescription=${pageDescription}"></head>
+
+<body>
+    <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+
+    <th:block th:replace="${pageStyles}"></th:block>
+
+    <header th:replace="~{fragments/navbar :: navbar}" role="banner"></header>
+
+    <main id="main-content" th:insert="${content}" role="main" tabindex="-1"></main>
+
+    <footer th:replace="~{fragments/footer :: footer}" role="contentinfo"></footer>
+
+    <script th:src="@{/js/landing.js}" defer></script>
+</body>
+
+</html>

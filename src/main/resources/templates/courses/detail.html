@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    th:replace="~{layouts/default :: layout('Detalle del Curso - Plataforma Educativa', 'Detalle del curso', ~{::pageStyles}, ~{::content})}">
+
+<th:block th:fragment="pageStyles">
+    <!-- Styles moved to static CSS files -->
+</th:block>
+
+<body>
+
+    <div th:fragment="content">
+        <div class="container" style="padding: 48px 0;">
+            <div th:if="${courseId}" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(148,163,184,0.2); border-radius: 16px; padding: 32px;">
+                <h1>Curso <span th:text="${courseId}"></span></h1>
+                <p>Aquí irá el contenido del curso.</p>
+                <a th:href="@{/}" class="btn btn-secondary">Volver</a>
+            </div>
+            <div th:unless="${courseId}" style="text-align: center; padding: 48px;">
+                <p>No se ha especificado un curso.</p>
+                <a th:href="@{/}" class="btn btn-secondary">Volver al inicio</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

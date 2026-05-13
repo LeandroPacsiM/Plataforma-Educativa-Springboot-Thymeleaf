@@ -1,65 +1,673 @@
-<th:block th:fragment="content">
-    <section class="home-hero">
-        <div class="container">
-            <h1 class="home-hero__title">Plataforma Educativa</h1>
-            <p class="home-hero__welcome">
-                Bienvenido, <span sec:authentication="name"></span>
-            </p>
-        </div>
-    </section>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:attr="lang=${lang ?: 'es'}">
 
-    <section class="home-section" sec:authorize="hasRole('ADMIN')">
-        <div class="container">
-            <h2 class="home-section__title">Panel de Administración</h2>
-            <p>Accede a las herramientas de gestión del sistema.</p>
-        </div>
-    </section>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Panel de estudiante - Plataforma Educativa">
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <title>Mi Panel - Plataforma Educativa</title>
+    <style>
+        :root {
+            --bg: #0f172b;
+            --bg-2: #020618;
+            --bg-3: #0a0a0a;
+            --panel: #1d293d;
+            --line: #314158;
+            --line-soft: #1d293d;
+            --text: #f1f5f9;
+            --text-secondary: #cad5e2;
+            --muted: #90a1b9;
+            --muted-dark: #62748e;
+            --accent: #4f39f6;
+            --accent-light: #7c86ff;
+            --accent-lighter: #a3b3ff;
+            color-scheme: dark;
+        }
 
-    <section class="home-section">
-        <div class="container">
-            <h2 class="home-section__title">Cursos disponibles</h2>
-            <div id="courses-container" class="courses-loading" aria-live="polite">
-                Cargando cursos...
+        * { box-sizing: border-box; }
+        html, body { min-height: 100%; }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+            background: var(--bg-3);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        .skip-link {
+            position: absolute;
+            top: -44px;
+            left: 0;
+            z-index: 100;
+            background: #02020a;
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 0 0 12px 0;
+            transition: top 0.2s ease;
+        }
+
+        .skip-link:focus { top: 0; }
+
+        .page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-bottom: 1px solid #1d293d;
+            background: rgba(2, 6, 24, 0.8);
+            backdrop-filter: blur(18px);
+        }
+
+        .nav__inner {
+            width: min(1152px, calc(100% - 128px));
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 0;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand__icon {
+            width: 24px;
+            height: 24px;
+            display: grid;
+            place-items: center;
+            color: #38bdf8;
+            flex: 0 0 auto;
+        }
+
+        .brand__name {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .nav__content {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex: 1;
+        }
+
+        .nav__links {
+            display: none;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .nav__link {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            position: relative;
+            padding-bottom: 4px;
+        }
+
+        .nav__link.active {
+            color: var(--accent);
+            border-bottom: 1.6px solid var(--accent);
+            padding-bottom: 2px;
+        }
+
+        .nav__link:hover {
+            color: var(--accent);
+        }
+
+        .nav__auth {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 1px solid #314158;
+            padding-left: 12px;
+        }
+
+        .nav__theme {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .nav__theme:hover {
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .nav__theme svg { width: 20px; height: 20px; }
+
+        .nav__avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #312c85;
+            display: grid;
+            place-items: center;
+            color: #a3b3ff;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .main-content {
+            flex: 1;
+            background: var(--bg-2);
+            padding: 40px 64px;
+        }
+
+        .content-width {
+            width: min(1152px, calc(100% - 128px));
+            margin: 0 auto;
+        }
+
+        .section {
+            margin-bottom: 48px;
+        }
+
+        .section__header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .section__title {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .section__link {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--accent-light);
+            text-decoration: none;
+        }
+
+        .section__link:hover {
+            color: var(--accent-lighter);
+        }
+
+        /* Mis cursos section */
+        .my-courses-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .course-progress-card {
+            display: grid;
+            grid-template-columns: 192px 1fr;
+            border: 1px solid #1d293d;
+            border-radius: 14px;
+            background: var(--bg);
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
+        }
+
+        .course-progress-card__image {
+            width: 192px;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .course-progress-card__image img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .course-progress-card__content {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .course-progress-card__title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            color: white;
+        }
+
+        .course-progress-card__meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--muted-dark);
+            margin-bottom: 16px;
+        }
+
+        .course-progress-card__meta-icon {
+            width: 14px;
+            height: 14px;
+            flex: 0 0 auto;
+        }
+
+        .course-progress-card__progress-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .progress-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #1d293d;
+            border-radius: 26843500px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .progress-bar__fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 26843500px;
+            transition: width 0.3s ease;
+        }
+
+        .course-progress-card__button {
+            background: rgba(49, 44, 133, 0.3);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            color: var(--accent-lighter);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .course-progress-card__button:hover {
+            background: rgba(49, 44, 133, 0.5);
+        }
+
+        /* Cursos disponibles grid */
+        .courses-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .course-card {
+            border: 1px solid #1d293d;
+            border-radius: 14px;
+            background: var(--bg);
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .course-card__image {
+            width: 100%;
+            height: 191px;
+            overflow: hidden;
+            background: #314158;
+        }
+
+        .course-card__image img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .course-card__content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .course-card__title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            color: white;
+        }
+
+        .course-card__description {
+            font-size: 14px;
+            color: var(--muted);
+            margin: 0 0 16px 0;
+            line-height: 1.5;
+            flex: 1;
+        }
+
+        .course-card__button {
+            background: #f1f5f9;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            color: var(--bg);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            align-self: flex-start;
+            transition: all 0.3s ease;
+        }
+
+        .course-card__button:hover {
+            background: #e2e8f0;
+        }
+
+        .footer {
+            background: var(--bg-2);
+            border-top: 1px solid #1d293d;
+            padding: 48px 64px;
+            margin-top: auto;
+        }
+
+        .footer__inner {
+            width: min(1152px, calc(100% - 128px));
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .footer__brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer__brand-icon {
+            width: 24px;
+            height: 24px;
+            color: #38bdf8;
+        }
+
+        .footer__brand-name {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .footer__copyright {
+            font-size: 14px;
+            color: var(--muted);
+            flex: 1;
+            text-align: center;
+        }
+
+        .footer__links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .footer__link {
+            font-size: 14px;
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer__link:hover {
+            color: var(--accent);
+        }
+
+        @media (min-width: 768px) {
+            .nav__links { display: flex; }
+            
+            .my-courses-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .courses-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 1280px) {
+            .courses-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body th:attr="data-authenticated=${#authorization.expression('isAuthenticated()')}">
+    <div class="page">
+        <header class="nav" role="banner">
+            <div class="nav__inner">
+                <a href="/" class="brand" aria-label="Ir al inicio">
+                    <span class="brand__icon">
+                        <svg viewBox="0 0 24 24" fill="none" width="24" height="24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5V6.75A2.75 2.75 0 0 1 6.75 4h11.5A1.75 1.75 0 0 1 20 5.75v12.5A1.75 1.75 0 0 1 18.25 20H6.75A2.75 2.75 0 0 1 4 17.25" />
+                            <path d="M7 8h8" />
+                            <path d="M7 12h10" />
+                        </svg>
+                    </span>
+                    <span class="brand__name">EduPlat</span>
+                </a>
+
+                <div class="nav__content">
+                    <nav class="nav__links">
+                        <a href="#" class="nav__link">Cursos</a>
+                        <a href="/home" class="nav__link active">Mis cursos</a>
+                        <a href="#" class="nav__link">Progreso</a>
+                        <a href="#" class="nav__link">Certificados</a>
+                    </nav>
+                </div>
+
+                <div class="nav__auth">
+                    <button class="nav__theme" aria-label="Cambiar tema">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5" />
+                            <line x1="12" y1="1" x2="12" y2="3" />
+                            <line x1="12" y1="21" x2="12" y2="23" />
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                            <line x1="1" y1="12" x2="3" y2="12" />
+                            <line x1="21" y1="12" x2="23" y2="12" />
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                        </svg>
+                    </button>
+                    <div class="nav__avatar" th:text="${#strings.substring(#authentication.name, 0, 2).toUpperCase()}">EE</div>
+                </div>
             </div>
-        </div>
-    </section>
-</th:block>
+        </header>
 
-<script th:inline="javascript">
-    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        <main id="main-content" class="main-content" role="main" tabindex="-1">
+            <div class="content-width">
+                <!-- Mis cursos section -->
+                <section class="section">
+                    <div class="section__header">
+                        <h2 class="section__title">Mis cursos</h2>
+                        <a href="#" class="section__link">Ver todo mi progreso</a>
+                    </div>
+                    <div id="my-courses-container" class="my-courses-grid">
+                        <!-- Cursos cargados dinámicamente -->
+                        <div style="text-align: center; color: var(--muted); padding: 20px;">Cargando cursos...</div>
+                    </div>
+                </section>
 
-    async function cargarCursos() {
-        const container = document.getElementById('courses-container');
-        try {
-            const response = await fetch('/api/courses', {
-                headers: { [csrfHeader]: csrfToken }
-            });
-            if (!response.ok) throw new Error('Error al obtener cursos');
-            const cursos = await response.json();
-            mostrarCursos(cursos);
-        } catch (error) {
-            container.textContent = 'Error al cargar los cursos.';
-            console.error(error);
-        }
-    }
+                <!-- Cursos disponibles section -->
+                <section class="section">
+                    <div class="section__header">
+                        <h2 class="section__title">Cursos disponibles</h2>
+                        <a href="#" class="section__link">Explorar catálogo</a>
+                    </div>
+                    <div id="courses-container" class="courses-grid">
+                        <!-- Cursos cargados dinámicamente -->
+                        <div style="text-align: center; color: var(--muted); padding: 20px;">Cargando cursos...</div>
+                    </div>
+                </section>
+            </div>
+        </main>
 
-    function mostrarCursos(cursos) {
-        const container = document.getElementById('courses-container');
-        if (cursos.length === 0) {
-            container.textContent = 'No hay cursos todavía.';
-            return;
-        }
-        const list = document.createElement('ul');
-        list.className = 'courses-list';
-        cursos.forEach(curso => {
-            const li = document.createElement('li');
-            li.innerHTML = `<strong>${curso.title}</strong> - ${curso.description}`;
-            list.appendChild(li);
+        <footer class="footer" role="contentinfo">
+            <div class="footer__inner">
+                <a href="/" class="footer__brand" aria-label="Ir al inicio">
+                    <span class="footer__brand-icon">
+                        <svg viewBox="0 0 24 24" fill="none" width="24" height="24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5V6.75A2.75 2.75 0 0 1 6.75 4h11.5A1.75 1.75 0 0 1 20 5.75v12.5A1.75 1.75 0 0 1 18.25 20H6.75A2.75 2.75 0 0 1 4 17.25" />
+                            <path d="M7 8h8" />
+                            <path d="M7 12h10" />
+                        </svg>
+                    </span>
+                    <span class="footer__brand-name">EduPlat</span>
+                </a>
+                <div class="footer__copyright">© 2026 EduPlat. Todos los derechos reservados.</div>
+                <div class="footer__links">
+                    <a href="#" class="footer__link">Términos Legales</a>
+                    <a href="#" class="footer__link">Privacidad</a>
+                    <a href="#" class="footer__link">Contacto</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const myCursesContainer = document.getElementById('my-courses-container');
+            const coursesContainer = document.getElementById('courses-container');
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+            const courseProgressImages = [
+                'https://www.figma.com/api/mcp/asset/a17e489a-1b61-42ff-8b55-4c2c315fb150',
+                'https://www.figma.com/api/mcp/asset/5a0eb8d1-81a3-4ca1-9e13-67506a130926',
+                'https://www.figma.com/api/mcp/asset/3fe6e6d0-8f88-4778-916a-cc45c1c847c3'
+            ];
+
+            function createMyCoursesCard(course, index) {
+                const progress = (Math.random() * 100).toFixed(0);
+                const card = document.createElement('div');
+                card.className = 'course-progress-card';
+                
+                card.innerHTML = `
+                    <div class="course-progress-card__image">
+                        <img src="${courseProgressImages[index % courseProgressImages.length]}" alt="${course.title}" onerror="this.src='${courseProgressImages[0]}'">
+                    </div>
+                    <div class="course-progress-card__content">
+                        <h3 class="course-progress-card__title">${course.title}</h3>
+                        <div class="course-progress-card__meta">
+                            <svg class="course-progress-card__meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <span>Última actividad hace 2 días</span>
+                        </div>
+                        <div class="course-progress-card__progress-section">
+                            <div class="progress-label">
+                                <span>Progreso</span>
+                                <span>${progress}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-bar__fill" style="width: ${progress}%"></div>
+                            </div>
+                            <button class="course-progress-card__button" onclick="location.href='/courses/${course.id}'">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                <span>Continuar aprendiendo</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                return card;
+            }
+
+            function createCourseCard(course, index) {
+                const card = document.createElement('div');
+                card.className = 'course-card';
+                
+                card.innerHTML = `
+                    <div class="course-card__image">
+                        <img src="${course.imageUrl || courseProgressImages[index % courseProgressImages.length]}" alt="${course.title}" onerror="this.src='${courseProgressImages[0]}'">
+                    </div>
+                    <div class="course-card__content">
+                        <h3 class="course-card__title">${course.title}</h3>
+                        <p class="course-card__description">${course.description}</p>
+                        <button class="course-card__button" onclick="location.href='/courses/${course.id}'">Ver detalles</button>
+                    </div>
+                `;
+                
+                return card;
+            }
+
+            async function loadCourses() {
+                try {
+                    const headers = {};
+                    if (csrfToken && csrfHeader) {
+                        headers[csrfHeader] = csrfToken;
+                    }
+
+                    const response = await fetch('/api/courses', { headers });
+                    if (!response.ok) throw new Error('Error loading courses');
+
+                    const courses = await response.json();
+                    if (!Array.isArray(courses) || courses.length === 0) {
+                        coursesContainer.innerHTML = '<div style="color: var(--muted); padding: 20px;">No hay cursos disponibles.</div>';
+                        myCursesContainer.innerHTML = '<div style="color: var(--muted); padding: 20px;">No hay cursos en progreso.</div>';
+                        return;
+                    }
+
+                    // Mostrar primeros 2 como "mis cursos"
+                    const myCoursesFragment = document.createDocumentFragment();
+                    courses.slice(0, 2).forEach((course, i) => {
+                        myCoursesFragment.appendChild(createMyCoursesCard(course, i));
+                    });
+                    if (myCursesContainer) myCursesContainer.replaceChildren(myCoursesFragment);
+
+                    // Mostrar todos como "cursos disponibles"
+                    const coursesFragment = document.createDocumentFragment();
+                    courses.forEach((course, i) => {
+                        coursesFragment.appendChild(createCourseCard(course, i));
+                    });
+                    if (coursesContainer) coursesContainer.replaceChildren(coursesFragment);
+                } catch (error) {
+                    console.error('Error:', error);
+                    coursesContainer.innerHTML = '<div style="color: var(--muted); padding: 20px;">Error al cargar cursos.</div>';
+                }
+            }
+
+            loadCourses();
         });
-        container.innerHTML = '';
-        container.appendChild(list);
-    }
+    </script>
+</body>
 
-    cargarCursos();
-</script>
+</html>
+</html>

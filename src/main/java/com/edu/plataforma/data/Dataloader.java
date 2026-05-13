@@ -32,7 +32,7 @@ public class Dataloader implements CommandLineRunner {
         admin.setEmail("admin@plataforma.com");
         admin.setPassword(passwordEncoder.encode("admin123"));
         admin.setName("Administrador");
-        admin.setRole(Role.ADMIN);
+        admin.setRole(Role.USER);
 
         User student = new User();
         student.setEmail("estudiante@plataforma.com");

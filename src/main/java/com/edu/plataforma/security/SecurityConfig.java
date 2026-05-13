@@ -43,6 +43,14 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(new AntPathRequestMatcher("/h2-console/**")))
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .usernameParameter("email")
+                        .passwordParameter("password")
+                        .defaultSuccessUrl("/home", true)
+                        .failureUrl("/login?error")
+                        .permitAll())
                 .oauth2Login(oauth -> oauth
                         .loginPage("/login")
                         .authorizationEndpoint(authorization -> {

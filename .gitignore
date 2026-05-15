@@ -33,6 +33,8 @@ build/
 .vscode/
 .agents/
 skills-lock.json
+!.vscode/launch.json
 
 AGENTS.md
 docs/
+.env
